@@ -18,11 +18,11 @@ git clone url
 Install the dependencies:
 
 ```bash
-poetry install
+pip install -r requirements.txt
 ```
 
 Run the API:
 
 ```bash
-poetry run uvicorn sport_calendar_api.main:app --reload
+uvicorn app.main:app --reload
 ```
