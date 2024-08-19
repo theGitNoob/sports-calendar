@@ -4,7 +4,7 @@ from fastapi import HTTPException, Body, Depends, APIRouter
 
 from app.src.application.infrastructure.db import get_db
 from app.src.application.infrastructure.repositories.event_repository import *
-from app.src.application.schemas.event import Event, EventInDB
+from app.src.application.schemas.event import EventInDB, EventDTOInDB
 
 router = APIRouter(
     tags=["events"],
@@ -13,8 +13,8 @@ router = APIRouter(
 )
 
 
-@router.post("/", response_model=EventInDB, status_code=201)
-async def create(event: Event, db: Session = Depends(get_db)):
+@router.post("/", response_model=EventDTOInDB, status_code=201)
+async def create(event: EventDTO, db: Session = Depends(get_db)):
     try:
         return create_event(db, event)
     except Exception as e:
@@ -32,12 +32,13 @@ def delete(event_id: int, db: Session = Depends(get_db)):
 
 
 @router.put("/{event_id}", response_model=EventInDB, status_code=201)
-def update(event_id: int, event: Event = Body(..., description="The updated event object"),
+def update(event_id: int, event: EventDTO = Body(..., description="The updated event object"),
            db: Session = Depends(get_db)):
     try:
         updated_event = update_event(db, event_id, event)
         if updated_event is None:
             raise HTTPException(status_code=404, detail="Event not found")
+        return updated_event
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -48,11 +49,12 @@ def read_single(event_id: int, db: Session = Depends(get_db)):
         event = get_event_by_id(db, event_id)
         if event is None:
             raise HTTPException(status_code=404, detail="Event not found")
+        return event
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/", response_model=List[Event])
+@router.get("/", response_model=List[EventInDB])
 def read_all(db: Session = Depends(get_db)):
     try:
         return get_all_events(db)
